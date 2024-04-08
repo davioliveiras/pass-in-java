@@ -4,6 +4,7 @@ import davioliveiras.passin.domain.attendee.Attendee;
 import davioliveiras.passin.domain.event.Event;
 import davioliveiras.passin.domain.event.exceptions.EventFullException;
 import davioliveiras.passin.domain.event.exceptions.EventNotFoudException;
+import davioliveiras.passin.domain.event.exceptions.EventTitleAlreadyUsedException;
 import davioliveiras.passin.dto.attendee.AttendeeRequestDTO;
 import davioliveiras.passin.dto.event.EventIdDTO;
 import davioliveiras.passin.dto.event.EventRequestDTO;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,8 @@ public class EventService {
     }
 
     public EventIdDTO createEvent(EventRequestDTO eventDTO){
+        this.verifyTitleAlreadyExists(eventDTO.title());
+
         Event newEvent = new Event();
         newEvent.setTitle(eventDTO.title());
         newEvent.setDetails(eventDTO.details());
@@ -40,6 +44,15 @@ public class EventService {
         this.eventRepository.save(newEvent);
 
         return new EventIdDTO(newEvent.getId());
+    }
+
+    public void verifyTitleAlreadyExists(String title){
+        Optional<Event> event = this.getEventByTitle(title);
+        if(event.isPresent()) throw new EventTitleAlreadyUsedException("Esse título já é usado.");
+    }
+
+    public Optional<Event> getEventByTitle(String title){
+        return this.eventRepository.findEventByTitle(title);
     }
 
     private String createSlug(String text){

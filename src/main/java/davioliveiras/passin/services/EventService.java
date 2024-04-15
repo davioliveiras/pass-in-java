@@ -6,11 +6,13 @@ import davioliveiras.passin.domain.event.exceptions.EventFullException;
 import davioliveiras.passin.domain.event.exceptions.EventNotFoudException;
 import davioliveiras.passin.domain.event.exceptions.EventTitleAlreadyUsedException;
 import davioliveiras.passin.dto.attendee.AttendeeRequestDTO;
+import davioliveiras.passin.dto.email.EmailRequest;
 import davioliveiras.passin.dto.event.EventIdDTO;
 import davioliveiras.passin.dto.event.EventRequestDTO;
 import davioliveiras.passin.dto.event.EventResponseDTO;
 import davioliveiras.passin.repositories.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -23,6 +25,9 @@ import java.util.Optional;
 public class EventService {
     private final EventRepository eventRepository;
     private final AttendeeService attendeeService;
+
+    @Autowired
+    private final EmailServiceClient emailServiceClient;
 
     public EventResponseDTO getEventDetails(String eventId){
         Event result = this.getEventById(eventId);
@@ -78,6 +83,10 @@ public class EventService {
         attendee.setEvent(event);
         attendee.setCreatedAt(LocalDateTime.now());
         this.attendeeService.registerAttendee(attendee);
+
+        EmailRequest request = new EmailRequest(attendee.getEmail(), "Confirmação de inscrição",
+                "Você foi cadastrado no evento " + event.getTitle() + ". Não se esqueça de fazer check-in.");
+        emailServiceClient.sendEmail(request);
 
         //Podia criar um DTO
         return attendee.getId();

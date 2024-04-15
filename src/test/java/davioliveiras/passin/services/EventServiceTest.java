@@ -36,30 +36,29 @@ class EventServiceTest {
     @Test
     @DisplayName("should create an event")
     void createEventCase1() {
+        EventRequestDTO eventRequest = new EventRequestDTO("NLW Unite", "Aprenda Java Spring Boot", 20);
 
+        eventService.createEvent(eventRequest);
+        verify(eventRepository, times(1)).save(any());
     }
 
     @Test
     @DisplayName("shouldn't create an event with a title that already exists")
-    void createEventCase2() {
+    void createEventCase2() throws Exception {
         Event alreadyExists = new Event(UUID.randomUUID().toString(),
                 "NLW Unite", "Evento online.","nlw-unite", 10);
 
         Optional<Event> ev = Optional.of(alreadyExists);
 
         when(this.eventService.getEventByTitle("NLW Unite")).thenReturn(ev);
-        //when(this.eventService.verifyTitleAlreadyExists("NLW Unite")).thenThrow(new EventTitleAlreadyUsedException("ID já usado"));
-
-        EventRequestDTO eventRequest = new EventRequestDTO("Rocketseat NWL 2", "Aprenda Java Spring Boot", 20);
-        //eventService.createEvent(eventRequest);
-        eventService.getEventByTitle("NLW Unit");
 
 
-        //verify(eventRepository, times(1)).findById(any());
-    }
+        Exception thrown = assertThrows(EventTitleAlreadyUsedException.class, () -> {
+            EventRequestDTO eventRequest = new EventRequestDTO("NLW Unite",
+                    "Aprenda Java Spring Boot", 20);
+            eventService.createEvent(eventRequest);
+        });
 
-    @Test
-    void registerAttendeeOnEvent() {
-
+        assertEquals("Esse título já é usado.", thrown.getMessage());
     }
 }

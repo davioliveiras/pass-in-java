@@ -1,0 +1,16 @@
+name: Continuos Integration
+
+on: push
+
+jobs:
+  continous-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: installing jdk
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+      - name: Build with maven
+        run: mvn package

@@ -13,4 +13,4 @@ jobs:
         with:
           java-version: 17
       - name: Build with maven
-        run: mvn package
+        run: mvn test
